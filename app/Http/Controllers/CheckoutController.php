@@ -40,19 +40,24 @@ class CheckoutController extends Controller
         $amount = $product['price'] * $qty;
         $orderReference = 'SHOP-' . now()->timestamp;
 
-        $response = Http::timeout(15)->post(rtrim(config('shop.api_base_url'), '/') . '/merchant/pay', [
-            'merchant_id' => config('shop.merchant_id'),
-            'merchant_app_token' => config('shop.merchant_app_token'),
-            'currency' => 'LKR',
-            'amount' => $amount,
-            'order_reference' => $orderReference,
-            'customer_phone_number' => config('shop.customer_phone'),
-            'customer_email' => config('shop.customer_email'),
-            'notify_url' => route('webhook.notify'),
-            'return_url' => route('checkout.return'),
-            'custom_param_1' => config('shop.custom_param_1'),
-            'custom_param_2' => config('shop.custom_param_2'),
-        ]);
+        // api.thegift.lk checks this against the app_domain registered for our app_token -
+        // without it (or with a mismatched value), /merchant/pay rejects the request with
+        // status 100 even if the token itself is valid.
+        $response = Http::timeout(15)
+            ->withHeaders(['Origin' => rtrim(config('app.url'), '/')])
+            ->post(rtrim(config('shop.api_base_url'), '/') . '/merchant/pay', [
+                'merchant_id' => config('shop.merchant_id'),
+                'merchant_app_token' => config('shop.merchant_app_token'),
+                'currency' => 'LKR',
+                'amount' => $amount,
+                'order_reference' => $orderReference,
+                'customer_phone_number' => config('shop.customer_phone'),
+                'customer_email' => config('shop.customer_email'),
+                'notify_url' => route('webhook.notify'),
+                'return_url' => route('checkout.return'),
+                'custom_param_1' => config('shop.custom_param_1'),
+                'custom_param_2' => config('shop.custom_param_2'),
+            ]);
 
         $data = $response->json();
 
