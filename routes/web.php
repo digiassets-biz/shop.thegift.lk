@@ -13,3 +13,4 @@ Route::post('/checkout/pay', [CheckoutController::class, 'pay'])->name('checkout
 Route::post('/notify', [WebhookController::class, 'notify'])->name('webhook.notify');
 Route::get('/webhook-logs', [WebhookLogController::class, 'index'])->name('webhook-logs.index');
 Route::get('/return', [ReturnController::class, 'show'])->name('checkout.return');
+Route::get('/return/status', [ReturnController::class, 'status'])->name('checkout.return-status');
